@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Tracker Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css?v=3.0">
+</head>
+<body>
+    <input type="checkbox" id="menu-toggle" class="menu-toggle-input">
+    
+    <label for="menu-toggle" class="hamburger-button" aria-label="Toggle Navigation Menu">
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+    </label>
+    <div class="page-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">KS</div>
+                <h1>KeroPost</h1>
+            </div>
+
+            <nav class="nav">
+                <a href="#" class="active">Dashboard</a>
+                <a href="#">Applications</a>
+                <a href="#">Analytics</a>
+                <a href="#">Settings</a>
+            </nav>
+        </aside>  
+        <label for="menu-toggle" class="sidebar-close-overlay"></label>
+        <main class="main-content">
+            <header class="app-header-zone">
+                <h2>Hi Paul! Let's Track Your Journey Today 🐸</h2>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card total">
+                    <span class="stat-label">Total Emails</span>
+                    <strong class="stat-count">{{ total_emails }}</strong>
+                </div>
+                {% for row in status_counts %}
+                    <div class="stat-card">
+                        <span class="stat-label">{{ row["status"] }}</span>
+                        <strong class="stat-count">{{ row["count"] }}</strong>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <section class="content-card">
+                <div class="section-header">
+                    <div class="header-left-group">
+                        <h3>Recent Job Emails</h3>
+                        <input class="search-box" type="text" placeholder="Search emails...">
+                    </div>
+
+                    <div class="integrated-toolbar">
+                        <form action="{{ url_for('scan_last_day') }}" method="POST">
+                            <button class="button-primary" type="submit">Scan Gmail 📬</button>
+                        </form>
+                        
+                        <form action="{{ url_for('scan_custom_range') }}" method="POST" class="scan-range-form">
+                            <div class="date-field-wrapper">
+                                <label class="custom-date-input">
+                                    <span>From</span>
+                                    <input type="date" name="start_date" required>
+                                </label>
+                                <span class="date-connector">To</span>
+                                <label class="custom-date-input">
+                                    <input type="date" name="end_date" required>
+                                </label>
+                            </div>
+                            <button class="button-secondary" type="submit">Go</button>
+                        </form>
+                    </div>
+                </div>
+
+
+                <div class="email-grid-container">
+                    {% for email in emails %}
+                        <div class="email-grid-card">
+                            <div class="card-header-row">
+                                <span class="status-pill status-{{ email['status'] | lower | replace(' ', '-') }}">
+                                    {{ email["status"] }}
+                                </span>
+
+                                <div class="card-dates">
+                                    <span class="card-date">
+                                        Applied: {{ email["date_received_display"] }}
+                                    </span>
+
+                                    {% if email["last_update_display"] and email["last_update_display"] != email["date_received_display"] %}
+                                        <span class="card-date card-date-muted">
+                                            Updated: {{ email["last_update_display"] }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="card-body-zone">
+                                <p class="card-role-title">
+                                    {{ email["role_title"] or email["subject"] }}
+                                </p>
+
+                                {% if email["location"] %}
+                                    <p class="card-location">
+                                        {{ email["location"] }}
+                                    </p>
+                                {% endif %}
+
+                                {% if email["latest_subject"] and email["latest_subject"] != email["subject"] %}
+                                    <div class="email-subject-block latest-subject-block">
+                                        <span class="email-subject-label">Latest Update</span>
+                                        <p class="card-subject latest-subject">
+                                            {{ email["latest_subject"] }}
+                                        </p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="card-footer-row">
+                                <span class="card-sender-label">From</span>
+                                <span class="card-sender-value" title="{{ email['sender'] }}">
+                                    {{ email["company"] or email["sender"] }}
+                                </span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            No Job Emails Saved Yet. Run Your Gmail Bot First.
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
